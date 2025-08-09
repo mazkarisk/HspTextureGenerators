@@ -1,11 +1,11 @@
-// ’lİ’è
-SIGMA = 3.0	// ƒKƒEƒXƒuƒ‰[‚Ì‹­“x
-BLUR_RADIUS = SIGMA * 6 // ƒuƒ‰[ŒvZ”ÍˆÍ(’PˆÊ:ƒsƒNƒZƒ‹)
+// å€¤è¨­å®š
+SIGMA = 3.0	// ã‚¬ã‚¦ã‚¹ãƒ–ãƒ©ãƒ¼ã®å¼·åº¦
+BLUR_RADIUS = SIGMA * 6 // ãƒ–ãƒ©ãƒ¼è¨ˆç®—ç¯„å›²(å˜ä½:ãƒ”ã‚¯ã‚»ãƒ«)
 
-// —”‚ÌƒV[ƒh’l‚ğ‰Šú‰»
+// ä¹±æ•°ã®ã‚·ãƒ¼ãƒ‰å€¤ã‚’åˆæœŸåŒ–
 randomize
 
-// ƒtƒBƒ‹ƒ^[—pŒW”‚ÌŒvZ
+// ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ç”¨ä¿‚æ•°ã®è¨ˆç®—
 ddim filter, 1 + BLUR_RADIUS * 2
 repeat (1 + BLUR_RADIUS * 2)
 	r = double(cnt - BLUR_RADIUS)
@@ -13,7 +13,7 @@ repeat (1 + BLUR_RADIUS * 2)
 	mes filter(cnt)
 loop
 
-// ‰Šú’l‚Æ‚µ‚ÄŠ®‘S‚Èƒ‰ƒ“ƒ_ƒ€’l‚ğİ’è‚·‚é
+// åˆæœŸå€¤ã¨ã—ã¦å®Œå…¨ãªãƒ©ãƒ³ãƒ€ãƒ å€¤ã‚’è¨­å®šã™ã‚‹
 ddim values, 64, 64, 64
 repeat 64
 	z = cnt
@@ -28,7 +28,7 @@ repeat 64
 	loop
 loop
 
-// ƒƒCƒ“•`‰æ•”•ª
+// ãƒ¡ã‚¤ãƒ³æç”»éƒ¨åˆ†
 screen 0, 512, 512
 gosub *draw
 gosub *xfilter
@@ -47,7 +47,7 @@ bmpsave "noise3d.bmp"
 end
 
 
-// ˆÈ‰ºAƒTƒuƒ‹[ƒ`ƒ“
+// ä»¥ä¸‹ã€ã‚µãƒ–ãƒ«ãƒ¼ãƒãƒ³
 
 
 *draw
@@ -110,7 +110,7 @@ repeat 64
 		repeat 64
 			x = cnt
 			repeat (1 + BLUR_RADIUS * 2)
-				work(x, y, z) += (values(x, (y + 64 - BLUR_RADIUS + cnt) \ 64, z) * filter(cnt))
+				work(x, y, z) += (values(x, y, (z + 64 - BLUR_RADIUS + cnt) \ 64) * filter(cnt))
 			loop
 		loop
 	loop
