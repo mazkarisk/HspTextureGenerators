@@ -1,0 +1,173 @@
+// 値設定
+SIGMA = 3.0	// ガウスブラーの強度
+BLUR_RADIUS = SIGMA * 6 // ブラー計算範囲(単位:ピクセル)
+
+// 乱数のシード値を初期化
+randomize
+
+// フィルター用係数の計算
+ddim filter, 1 + BLUR_RADIUS * 2
+repeat (1 + BLUR_RADIUS * 2)
+	r = double(cnt - BLUR_RADIUS)
+	filter(cnt) = 1.0 / sqrt(2.0 * M_PI * SIGMA * SIGMA) * expf(-(r * r)/(2.0 * SIGMA * SIGMA))
+	mes filter(cnt)
+loop
+
+// 初期値として完全なランダム値を設定する
+ddim values, 64, 64, 64
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			randomvalue = rnd(32768) + rnd(32768) * 32768
+			randomvalue = double(randomvalue) / (32767.0 * 32768.0)
+			values(x, y, z) = randomvalue
+		loop
+	loop
+loop
+
+// メイン描画部分
+screen 0, 512, 512
+gosub *draw
+gosub *xfilter
+gosub *reflesh
+gosub *draw
+gosub *yfilter
+gosub *reflesh
+gosub *draw
+gosub *zfilter
+gosub *reflesh
+gosub *draw
+gosub *levelfilter
+gosub *reflesh
+gosub *draw
+bmpsave "noise3d.bmp"
+end
+
+
+// 以下、サブルーチン
+
+
+*draw
+repeat 64
+	z = cnt
+	redraw 0
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			color values(x,y,z) * 255, values(x,y,z) * 255, values(x,y,z) * 255
+			pset x + (z \ 8) * 64, y + (z / 8) * 64
+		loop
+	loop
+	redraw
+	await
+loop
+return
+
+*xfilter
+ddim work, 64, 64, 64
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			repeat (1 + BLUR_RADIUS * 2)
+				work(x, y, z) += (values((x + 64 - BLUR_RADIUS + cnt) \ 64, y, z) * filter(cnt))
+			loop
+		loop
+	loop
+	await
+loop
+return
+
+*yfilter
+ddim work, 64, 64, 64
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			repeat (1 + BLUR_RADIUS * 2)
+				work(x, y, z) += (values(x, (y + 64 - BLUR_RADIUS + cnt) \ 64, z) * filter(cnt))
+			loop
+		loop
+	loop
+	await
+loop
+return
+
+*zfilter
+ddim work, 64, 64, 64
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			repeat (1 + BLUR_RADIUS * 2)
+				work(x, y, z) += (values(x, (y + 64 - BLUR_RADIUS + cnt) \ 64, z) * filter(cnt))
+			loop
+		loop
+	loop
+	await
+loop
+return
+
+*levelfilter
+min = 1.0
+max = 0.0
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			if values(x, y, z) < min : min = values(x, y, z)
+			if values(x, y, z) > max : max = values(x, y, z)
+		loop
+	loop
+	await
+loop
+
+if absf(min - 0.5) > absf(max - 0.5) : radius = absf(min - 0.5) : else : radius = absf(max - 0.5)
+
+ddim work, 64, 64, 64
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			tempval = (values(x, y, z) - 0.5) / radius
+			if tempval < -1.0 : tempval = -1.0
+			if tempval > 1.0 : tempval = 1.0
+			tempval = tempval * 0.5 + 0.5
+			tempval = tempval * tempval * (3.0 - 2.0 * tempval)
+			tempval = tempval * tempval * (3.0 - 2.0 * tempval)
+			tempval = tempval * tempval * (3.0 - 2.0 * tempval)
+			work(x, y, z) = tempval
+		loop
+	loop
+	await
+loop
+return
+
+*reflesh
+repeat 64
+	z = cnt
+	repeat 64
+		y = cnt
+		repeat 64
+			x = cnt
+			values(x, y, z) = work(x, y, z)
+		loop
+	loop
+	await
+loop
+return
+
